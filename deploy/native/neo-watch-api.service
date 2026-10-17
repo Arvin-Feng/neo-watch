@@ -1,0 +1,28 @@
+[Unit]
+Description=NEO Watch NASA data API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=neo-watch
+Group=neo-watch
+WorkingDirectory=/opt/neo-watch/current
+EnvironmentFile=/opt/neo-watch/shared/api.env
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=4180
+Environment=FEED_CACHE_FILE=/opt/neo-watch/shared/cache/today.json
+ExecStart=/usr/bin/node server/service.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/neo-watch/shared/cache
+
+[Install]
+WantedBy=multi-user.target

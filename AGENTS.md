@@ -30,10 +30,10 @@
 | `src/config.js` | 开发/生产配置与浏览器请求超时 |
 | `src/scene.js` | 地球材质、示意环、点选、高亮、相机、WebGL 降级 |
 | `server/service.mjs` | 当日 API、并发合并、共享缓存、失败退避、可选磁盘缓存 |
-| `deploy/` | 项目内 Nginx、Compose、独立版本打包与部署说明 |
+| `deploy/` | Docker（独立/NPM）、非 Docker 的 systemd/Nginx、版本打包与统一验收 |
 | `tests/` | Node 原生数据与服务端测试 |
 
-生产链路：浏览器 → 现有 Nginx Proxy Manager → 项目 web 容器 → 项目 api 容器 → NASA。web 也提供静态页面；两级代理用途不同。
+生产支持两种方式：Docker 为浏览器 → 独立 web 容器（或现有 NPM 转发）→ api 容器 → NASA；非 Docker 为浏览器 → 宿主机 Nginx → 本机 Node API → NASA。两种方式的 Nginx 同时提供静态页面和同域 API 转发，运行主机无需项目 npm 依赖。具体选型见 `deploy/README.md`。
 
 ## 不可破坏的数据与展示规则
 

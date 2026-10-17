@@ -72,3 +72,12 @@ NPM 待配置/待核实值：域名 `neo.innovelyx.com` → scheme `http` → �
 - 补齐 `.gitignore`：排除本地环境配置、聊天记录、日志、依赖、构建产物和发布归档；保留 `.env.example`。Key 配置验证截图也排除上传，本地文件保留。
 - 上传候选文本未发现本地环境密钥或常见 GitHub token/私钥格式；本次重新运行 `npm test`，27/27 通过。
 - 未修改业务代码、创建新部署包或更改服务器配置。
+
+## Docker / 非 Docker 部署支持（2026-10-17）
+
+- 保留原 NPM 网络 Compose；新增独立 `deploy/compose.standalone.yaml`，默认 127.0.0.1:8081，支持配置绑定地址、端口及共享目录，无外部 Docker 网络依赖。
+- 新增 `deploy/native/` 的 systemd API 服务和宿主机 Nginx 站点模板，使用系统 Node.js 22.12+、current 版本软链接及 shared 配置/缓存；无需 Docker 或项目 npm 依赖。
+- 新增 `npm start` API 入口、服务端配置样例与 `deploy/check.mjs` 统一验收命令。部署文档覆盖首次配置、域名/HTTPS 接入、IP 访问、更新、回退与切换方式；Key 不进入前端或归档。
+- 已通过 31/31 测试（含新增检查器测试与本地 HTTP 集成测试）、两份 Compose 配置解析、独立端口默认/覆盖值检查、生产构建及前端密钥检查。
+- 最终部署包为 `deployment-artifacts/20261017T011231Z/neo-watch-20261017T011231Z.tar.gz`。已解压到独立临时目录，确认部署文件齐全、不含 node_modules/开发配置/聊天记录，并启动包内 API 验证健康、测试磁盘缓存恢复、获取时间及检查器；此项使用合成数据，未请求真实 NASA。
+- 本机 Docker daemon 不可用，且未安装宿主机 Nginx/systemd，尚未实际启动容器或执行 Linux 服务安装/站点校验；没有修改远程服务器，也没有重新验收公网或浏览器界面。上述部署方式的目标主机验收仍需按指南执行。

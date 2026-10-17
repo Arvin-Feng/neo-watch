@@ -20,7 +20,7 @@ npm run build
 npm run preview -- --host 127.0.0.1 --port 4174
 ```
 
-`dist/` 是构建后的静态网页，可放到支持 HTTPS 的静态托管服务。不要直接双击 `index.html`，请使用开发服务或静态 HTTP 服务。
+`dist/` 是构建后的静态网页；生产环境还必须提供同域 `/api/neo/today`，只上传静态文件无法获取真实数据。不要直接双击 `index.html`，请使用 HTTP 服务。
 
 构建配置保留已有输出，不批量清理 `dist/`；历史哈希资源如需清理，请由用户手动处理。
 
@@ -32,11 +32,21 @@ npm run preview -- --host 127.0.0.1 --port 4174
 VITE_NASA_API_KEY=你的NASA_API_Key
 ```
 
-修改后重启开发服务；构建部署时也需要重新构建。集中配置见 `src/config.js`，`.env.example` 给出了样例。`.env.local` 已加入 `.gitignore`。
+修改后重启开发服务。集中配置见 `src/config.js`，`.env.example` 给出了开发样例。`.env.local` 已加入 `.gitignore`；生产 Key 单独在服务器配置，修改它不需要重建前端。
 
 开发模式仍可直接请求 NASA。生产构建改为请求同域 `/api/neo/today`，不包含本地 NASA Key；数据代理从服务器 `NASA_API_KEY` 环境变量读取 Key，合并并发请求并缓存十分钟。代理保留 NASA 获取时间，更新失败时只回退到当日缓存，并由界面明确标识。
 
 服务器部署步骤见 [部署指南](deploy/README.md)。运行 `bash deploy/package.sh` 生成经过测试和密钥检查的独立部署包。生产构建的本地预览需要同时运行数据服务，并监听 `127.0.0.1:4180`（Vite preview 已配置 `/api` 转发）。
+
+## 生产部署
+
+| 方式 | 说明 |
+|---|---|
+| [Docker 独立部署](deploy/docker-standalone.md) | Compose 启动 web/API，默认入口 127.0.0.1:8081，支持配置 IP 和端口 |
+| [Docker + 现有 NPM](deploy/docker-npm.md) | 保留已有 Nginx Proxy Manager 网络接入 |
+| [非 Docker 部署](deploy/native/README.md) | 系统 Node.js 22.12+ 运行 API，systemd 常驻，宿主机 Nginx 提供页面和同域转发 |
+
+两种方式共用版本部署包，运行主机无需安装项目 npm 依赖。生产配置样例为 `deploy/api.env.example`；`npm start` 启动 API，需由环境传入 NASA_API_KEY，不提供静态网页。统一验收命令为 `node deploy/check.mjs https://你的域名`。详细配置、更新和回退见对应指南。
 
 `VITE_` 变量通常会包含在浏览器代码中，不能作为秘密保存。本项目仅在开发模式读取 `VITE_NASA_API_KEY`，生产部署使用上述服务端代理；不要将其他服务的密钥放入前端配置。
 

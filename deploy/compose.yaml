@@ -42,6 +42,7 @@ services:
       FEED_CACHE_FILE: /cache/today.json
     volumes:
       - ../server:/app/server:ro
+      - ../deploy:/app/deploy:ro
       - ../src:/app/src:ro
       - ../package.json:/app/package.json:ro
       - /opt/neo-watch/shared/cache:/cache

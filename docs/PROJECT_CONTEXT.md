@@ -18,9 +18,12 @@ HTML、原生 JavaScript ESM、Tailwind CSS 4.3.3；Vite 6.3.5；globe.gl 2.46.2
 
 ```text
 开发：浏览器 → NASA NeoWs（开发 Key）
-生产：浏览器 → Nginx Proxy Manager → web:8080
+Docker：浏览器 → 独立端口或 Nginx Proxy Manager → web:8080
                                       ├─ 静态构建页面/素材
                                       └─ /api/neo/today → api:8080 → NASA
+非 Docker：浏览器 → 宿主机 Nginx:8081
+                        ├─ current/dist 静态页面
+                        └─ /api/neo/today → 127.0.0.1:4180 Node API → NASA
 ```
 
 API 复用 `src/data.js` 的日期、请求及归一化函数，并复用 `src/cache.js` 校验磁盘快照。没有新增第三方服务端框架。三维模块由前端动态 import，数据和基础界面先启动。
@@ -82,8 +85,10 @@ NASA 上游为 `GET https://api.nasa.gov/neo/rest/v1/feed`，带 `start_date`、
 
 - 深空背景、蓝色大气、夜间灯光、红青标记；桌面左右面板、700px 移动断点、手机列表和底部详情抽屉。选择目标暂停旋转；筛掉选中项则关闭详情；Escape 支持详情/科普关闭。
 - WebGL 初始化或纹理异常有降级说明；隐藏标签页暂停渲染。地球纹理在本地 `public/assets/`，来源/署名见 [asset-sources.md](asset-sources.md)。
-- 生产使用现有 Nginx Proxy Manager 处理域名/证书，项目 web 容器提供静态资源及 API 转发。Compose 没有发布宿主机端口。
+- Docker 提供两份二选一配置：原 `deploy/compose.yaml` 接入现有 NPM 网络且不发布宿主机端口；`compose.standalone.yaml` 无外部网络依赖，默认发布 127.0.0.1:8081，可通过 NEO_WEB_BIND/NEO_WEB_PORT 配置 IP 访问。两者不叠加运行。
 - `techainetwork` 是现有外部代理网络，NPM 通过 `neo-watch-web:8080` 访问项目；web→api 使用独立 backend 网络和 Docker DNS。镜像 PORTS 中的 `80/tcp` 不等于本项目实际监听端口。
+- 非 Docker 使用 Node.js 22.12+、systemd 与宿主机 Nginx，模板在 `deploy/native/`。current 软链接选择 release；服务账户 neo-watch，API 监听 127.0.0.1:4180，Nginx 默认监听 127.0.0.1:8081，复用 shared/api.env 和 shared/cache。切换部署方式前停止本项目旧服务并调整缓存所有权。
+- `npm start` 仅启动 API，使用环境中的 NASA_API_KEY，不加载开发配置；运行主机无需安装项目 npm 依赖。`deploy/check.mjs` 验证入口页面身份、health、当前上海日期和快照格式，输出目标数、原获取时间及 stale；不能代替桌面/手机或证书验收。
 - `deploy/package.sh` 测试后构建到新时间戳目录，检查前端不含本地 Key/直接 NASA feed URL，仅打包运行所需文件；不打包本地环境文件与 node_modules。
 - 保留旧发布版本及共享配置，固定 Compose 项目名 `neo-watch`；更新/回退会重建本项目容器，可能有短暂中断，不是已经实现的零停机切换。
 
