@@ -66,9 +66,9 @@ NPM 待配置/待核实值：域名 `neo.innovelyx.com` → scheme `http` → �
 
 常用入口：`npm test`；`bash deploy/package.sh`；具体部署命令见 `../deploy/README.md`。打包会产生新版本，应只在需要发布时运行；本次交接没有构建新包或修改服务器。原目录无 Git 仓库的历史检查不能替代未来的实际 Git 状态检查。
 
-## GitHub 仓库准备（2026-10-17）
+## GitHub 仓库同步（2026-10-17）
 
-- 已在项目根目录初始化 Git，初始分支为 `main`；远程仓库待用户指定，尚未推送。
+- 已在项目根目录初始化 Git，分支为 `main`；首次提交 `ac797d6` 已推送到用户指定的公开仓库 [Arvin-Feng/neo-watch](https://github.com/Arvin-Feng/neo-watch)，本地已设置跟踪 `origin/main`。
 - 补齐 `.gitignore`：排除本地环境配置、聊天记录、日志、依赖、构建产物和发布归档；保留 `.env.example`。Key 配置验证截图也排除上传，本地文件保留。
 - 上传候选文本未发现本地环境密钥或常见 GitHub token/私钥格式；本次重新运行 `npm test`，27/27 通过。
 - 未修改业务代码、创建新部署包或更改服务器配置。
