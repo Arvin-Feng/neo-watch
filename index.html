@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#030712" />
+  <meta name="description" content="探索今日近地小行星飞掠数据，查看直径、速度与月球距离。" />
+  <title>近地小行星实时雷达 · NEO Observatory</title>
+  <link rel="icon" href="data:," />
+</head>
+<body>
+  <main id="app" class="relative min-h-dvh overflow-hidden text-slate-100">
+    <header class="topbar flex items-center justify-between">
+      <div class="brand flex items-center gap-4">
+        <i class="ph ph-globe-hemisphere-east brand-icon" aria-hidden="true"></i>
+        <div><h1>近地小行星实时雷达</h1><p class="eyebrow">NEO / OBSERVATORY · v1.1</p></div>
+      </div>
+      <div class="overview flex items-center">
+        <div class="date-block"><time id="query-date" class="numeric">—</time><span>北京时间 · 今日飞掠</span></div>
+        <div class="stat"><span><span id="count-label">今日目标</span> <button class="help-trigger" data-help="today" aria-label="了解今日目标统计"><i class="ph ph-info" aria-hidden="true"></i></button></span><strong id="total-count" class="numeric cyan">—</strong></div>
+        <div class="stat"><span>潜在危险</span><strong id="hazard-count" class="numeric red">—</strong></div>
+      </div>
+      <div class="header-actions flex items-center gap-4">
+        <div class="data-meta"><span id="source-badge" class="source-badge">连接 NASA</span><span id="updated-at">正在获取今日数据</span></div>
+        <button id="refresh" class="refresh-button" aria-label="刷新 NASA 数据"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span>刷新</span></button>
+      </div>
+    </header>
+
+    <section id="observation" class="observation" aria-label="3D 地球与小行星观测区">
+      <div id="globe" role="img" aria-label="夜光地球与小行星距离示意，目标也可通过左侧列表选择"></div>
+      <div id="scene-notice" class="scene-notice" role="status" hidden></div>
+      <div id="scene-loading" class="scene-loading"><i class="ph ph-circle-notch" aria-hidden="true"></i><span>正在建立观测视野</span></div>
+      <div class="scene-caption"><span class="eyebrow">EARTH / NEAR-EARTH OBJECTS</span><span>今日飞掠 · 距离示意</span></div>
+    </section>
+
+    <button id="mobile-list-toggle" class="mobile-list-toggle" aria-expanded="false" aria-controls="target-panel"><i class="ph ph-list" aria-hidden="true"></i><span>今日目标</span><span id="mobile-count" class="numeric">—</span></button>
+    <aside id="target-panel" class="target-panel glass" aria-label="今日飞掠目标列表">
+      <div class="panel-heading flex items-center justify-between"><h2>今日飞掠目标</h2><span id="list-count" class="muted">等待数据</span></div>
+      <div class="filters flex" role="group" aria-label="目标分类筛选">
+        <button id="filter-all" class="active" aria-pressed="true">全部 <span id="all-filter-count">—</span></button>
+        <button id="filter-hazard" aria-pressed="false">潜在危险 <span id="hazard-filter-count">—</span></button>
+      </div>
+      <div id="feed-status" class="feed-status" aria-live="polite"></div>
+      <div id="target-list" class="target-list" aria-busy="true"></div>
+      <div class="panel-footer"><i class="ph ph-sort-ascending" aria-hidden="true"></i><span>按最近距离排序</span><button id="demo-entry">体验演示</button><button id="back-live" hidden>返回真实数据</button></div>
+    </aside>
+
+    <aside id="details" class="details-panel glass" aria-labelledby="detail-name" hidden>
+      <div class="detail-top flex items-center justify-between"><span>目标详情</span><button id="close-details" class="icon-button" aria-label="关闭目标详情"><i class="ph ph-x" aria-hidden="true"></i></button></div>
+      <h2 id="detail-name" tabindex="-1"></h2>
+      <span id="detail-class" class="classification"></span>
+      <button class="help-trigger" data-help="hazard" aria-label="了解潜在危险分类"><i class="ph ph-info" aria-hidden="true"></i></button>
+      <div class="source-links"><a id="jpl-source" target="_blank" rel="noopener noreferrer">JPL 天体资料 <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a><a href="https://api.nasa.gov/#NeoWS" target="_blank" rel="noopener noreferrer">NASA 数据说明</a></div>
+      <div class="approach-block">
+        <div class="approach-heading"><span>最近接近时刻</span><button class="help-trigger" data-help="time" aria-label="了解飞掠时间"><i class="ph ph-info" aria-hidden="true"></i></button><span id="approach-status" class="approach-badge"></span></div>
+        <time id="detail-approach" class="numeric"></time><span class="time-zone">北京时间 UTC+8</span>
+        <p id="detail-utc" class="numeric utc-time"></p>
+      </div>
+      <dl class="detail-metrics">
+        <div><dt>估算直径 <button class="help-trigger" data-help="diameter" aria-label="了解估算直径"><i class="ph ph-info" aria-hidden="true"></i></button><span class="demo-label" hidden>（演示数据）</span></dt><dd><span id="detail-diameter" class="numeric"></span><span id="diameter-unit" class="unit">m</span></dd></div>
+        <div><dt>相对飞掠速度 <button class="help-trigger" data-help="velocity" aria-label="了解飞掠速度"><i class="ph ph-info" aria-hidden="true"></i></button><span class="demo-label" hidden>（演示数据）</span></dt><dd><span id="detail-velocity" class="numeric"></span><span id="velocity-unit" class="unit">km/s</span></dd></div>
+        <div><dt>最近距离 <button class="help-trigger" data-help="distance" aria-label="了解最近距离"><i class="ph ph-info" aria-hidden="true"></i></button><span class="demo-label" hidden>（演示数据）</span></dt><dd><span id="detail-distance" class="numeric"></span><span id="distance-unit" class="unit">LD</span></dd><p id="detail-kilometers" class="distance-kilometers numeric"></p></div>
+      </dl>
+      <p id="detail-note" class="detail-note"><i class="ph ph-info" aria-hidden="true"></i><span>潜在危险分类不代表本次会撞击地球。</span></p>
+      <p class="ld-note">1 LD ≈ 384,400 km · 地月平均距离</p>
+      <p id="identity-note" class="identity-note"></p>
+    </aside>
+
+    <footer class="controlbar flex items-center justify-between">
+      <div class="view-controls flex items-center">
+        <button id="rotation-toggle" aria-pressed="false"><i class="ph ph-pause-circle" aria-hidden="true"></i><span>暂停旋转</span></button>
+        <button id="reset-view"><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i><span>重置视角</span></button>
+      </div>
+      <div class="legend flex items-center gap-6"><span><i class="ph-fill ph-circle cyan" aria-hidden="true"></i>普通目标</span><span><i class="ph-fill ph-circle red" aria-hidden="true"></i>潜在危险</span></div>
+      <span class="interaction-hint">拖拽旋转 · 滚轮缩放 · 点击目标查看详情</span>
+      <span class="scale-note">距离对数缩放，位置与轨道为示意</span>
+    </footer>
+  </main>
+  <dialog id="metric-help" aria-labelledby="help-title">
+    <div class="help-heading"><h2 id="help-title"></h2><button id="close-help" class="icon-button" aria-label="关闭科普说明"><i class="ph ph-x" aria-hidden="true"></i></button></div>
+    <p id="help-copy"></p><a id="help-source" target="_blank" rel="noopener noreferrer">阅读 NASA/JPL 官方说明 <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
+  </dialog>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
